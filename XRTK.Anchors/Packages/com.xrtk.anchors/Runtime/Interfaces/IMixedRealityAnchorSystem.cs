@@ -68,7 +68,7 @@ namespace XRTK.Interfaces.Anchors
         /// Clear the current cache of located Anchors from the provider services
         /// </summary>
         /// <returns></returns>
-        bool ClearAnchors();
+        bool TryClearAnchors();
 
         #endregion Public Methods
 

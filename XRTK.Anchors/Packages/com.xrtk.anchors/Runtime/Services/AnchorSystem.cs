@@ -67,7 +67,7 @@ namespace XRTK.Services.Anchors
             return currentAnchorProvider.MoveAnchor(ref anchoredObject, worldPos, worldRot, cloudAnchorID);
         }
 
-        public bool ClearAnchors() => currentAnchorProvider.ClearAnchors();
+        public bool TryClearAnchors() => currentAnchorProvider.TryClearAnchors();
 
         /// <inheritdoc />
         public event Action CreateAnchorFailed;

@@ -108,7 +108,7 @@ namespace XRTK.Interfaces.Anchors
         /// 
         /// </summary>
         /// <returns></returns>
-        bool ClearAnchors();
+        bool TryClearAnchors();
 
         #endregion Public Methods
 

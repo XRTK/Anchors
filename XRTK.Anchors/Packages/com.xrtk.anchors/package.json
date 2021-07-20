@@ -1,7 +1,7 @@
 {
   "name": "com.xrtk.anchors",
   "displayName": "XRTK.Anchors",
-  "description": "The Anchors components for the Mixed Reality Toolkit.",
+  "description": "The cloud Anchors components for the Mixed Reality Toolkit.",
   "keywords": [
     "xrtk",
     "vr",
