@@ -15,7 +15,6 @@ namespace XRTK.Interfaces.Anchors
         /// The current <see cref="IMixedRealityAnchorDataProvider"/>
         /// </summary>
         IMixedRealityAnchorDataProvider CurrentAnchorProvider { get; }
-        GameObject SpatialManagerGameObject { get; }
 
         #region Public Methods
 

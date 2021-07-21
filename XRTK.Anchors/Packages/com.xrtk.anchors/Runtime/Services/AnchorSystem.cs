@@ -16,17 +16,13 @@ namespace XRTK.Services.Anchors
     public class AnchorSystem : BaseExtensionService, IMixedRealityAnchorSystem
     {
         private IMixedRealityAnchorDataProvider currentAnchorProvider;
-        private GameObject spatialManagerGameObject;
-        public GameObject SpatialManagerGameObject => spatialManagerGameObject;
 
         [HideInInspector]
         public IMixedRealityAnchorDataProvider CurrentAnchorProvider => currentAnchorProvider;
 
         /// <inheritdoc />
         public AnchorSystem(string name, uint priority, AnchorSystemProfile profile) : base(name, priority, profile)
-        {
-            spatialManagerGameObject = profile.SpatialManagerGameObject;
-        }
+        { }
 
         #region IMixedRealityAnchorSystem Implementation
 

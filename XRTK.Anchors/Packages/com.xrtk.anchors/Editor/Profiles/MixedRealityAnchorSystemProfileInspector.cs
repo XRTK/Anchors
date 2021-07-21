@@ -7,16 +7,15 @@ using XRTK.Services;
 
 namespace XRTK.Editor.Profiles.TeleportSystem
 {
+    /// <summary>
+    /// Reserved for future use as more providers are added.
+    /// </summary>
     [CustomEditor(typeof(AnchorSystemProfile))]
     public class MixedRealityAnchorSystemProfileInspector : MixedRealityServiceProfileInspector
     {
-        private SerializedProperty spatialManagerGameObject;
-
         protected override void OnEnable()
         {
             base.OnEnable();
-
-            spatialManagerGameObject = serializedObject.FindProperty(nameof(spatialManagerGameObject));
         }
 
         public override void OnInspectorGUI()
@@ -26,7 +25,6 @@ namespace XRTK.Editor.Profiles.TeleportSystem
             serializedObject.Update();
             EditorGUI.BeginChangeCheck();
 
-            EditorGUILayout.PropertyField(spatialManagerGameObject);
             EditorGUILayout.Space();
 
             serializedObject.ApplyModifiedProperties();
