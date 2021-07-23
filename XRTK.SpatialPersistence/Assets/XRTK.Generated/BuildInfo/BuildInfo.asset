@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b96ddb26b149cdc459663752e8cb751e, type: 3}
   m_Name: BuildInfo
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   autoIncrement: 0
   bundleIdentifier: com.xrtk.spatial-persistence
   install: 0
