@@ -15,77 +15,86 @@ namespace XRTK.Services.SpatialPersistence
     [System.Runtime.InteropServices.Guid("C055102F-5204-42ED-A4D8-F80D129B6BBD")]
     public class SpatialPersistenceSystem : BaseSystem, IMixedRealitySpatialPersistenceSystem
     {
-        private IMixedRealitySpatialPersistenceDataProvider currentSpatialPersistenceProvider;
-
-        [HideInInspector]
-        public IMixedRealitySpatialPersistenceDataProvider CurrentSpatialPersistenceProvider => currentSpatialPersistenceProvider;
+        /// <inheritdoc />
+        public SpatialPersistenceSystem(SpatialPersistenceSystemProfile profile)
+            : base(profile)
+        {
+        }
 
         /// <inheritdoc />
-        public SpatialPersistenceSystem(SpatialPersistenceSystemProfile profile) 
-            : base(profile)
-        { }
-
-        #region IMixedRealitySpatialPersistenceSystem Implementation
-
-        public void CreateAnchoredObject(GameObject objectToSpatialPersistencePrefab, Vector3 position, Quaternion rotation, DateTimeOffset timeToLive)
+        public Guid CreateAnchoredObject(GameObject prefab, Vector3 position, Quaternion rotation, DateTimeOffset timeToLive)
         {
-            Debug.Assert(objectToSpatialPersistencePrefab, "Prefab Missing");
-            Debug.Assert(timeToLive == new DateTimeOffset(), "Lifetime of SpatialPersistence required");
+            Debug.Assert(prefab, "Prefab Missing");
 
-            currentSpatialPersistenceProvider.CreateAnchoredObject(objectToSpatialPersistencePrefab, position, rotation, timeToLive);
+            // TODO Keep an internal reference to prefabs and their persistence data provider ids.
+
+            foreach (var persistenceDataProvider in activeDataProviders)
+            {
+                return persistenceDataProvider.CreateAnchoredObject(position, rotation, timeToLive);
+            }
+
+            return default;
         }
 
-        public bool FindAnchorPoint(string id)
-        {
-            Debug.Assert(string.IsNullOrEmpty(id), "ID required for SpatialPersistence search");
-
-            return currentSpatialPersistenceProvider.FindAnchorPoints(new[] { id });
-        }
-
-        public bool FindAnchorPoints(string[] ids)
+        /// <inheritdoc />
+        public bool FindAnchorPoints(params Guid[] ids)
         {
             Debug.Assert(ids.Length > 0, "IDs required for SpatialPersistence search");
 
-            return currentSpatialPersistenceProvider.FindAnchorPoints(ids);
+            foreach (var persistenceDataProvider in activeDataProviders)
+            {
+                if (persistenceDataProvider.FindAnchorPoints(ids))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
-        public bool PlaceSpatialPersistence(string id, GameObject objectToPlace)
+        /// <inheritdoc />
+        public bool MoveSpatialPersistence(Guid id, Vector3 position, Quaternion rotation)
         {
-            Debug.Assert(!string.IsNullOrEmpty(id), "SpatialPersistence ID is null");
-            Debug.Assert(objectToPlace != null, "Object To SpatialPersistence Prefab is null");
+            foreach (var persistenceDataProvider in activeDataProviders)
+            {
+                if (persistenceDataProvider.MoveAnchoredObject(id, position, rotation))
+                {
+                    return true;
+                }
+            }
 
-            return currentSpatialPersistenceProvider.PlaceAnchoredObject(id, objectToPlace);
+            return false;
         }
 
-        public bool MoveSpatialPersistence(GameObject anchoredObject, Vector3 worldPos, Quaternion worldRot, string cloudSpatialPersistenceID = "")
+        /// <inheritdoc />
+        public bool DeleteAnchors(params Guid[] ids)
         {
-            Debug.Assert(anchoredObject != null, "Currently SpatialPersistenceed GameObject reference required");
+            foreach (var persistenceDataProvider in activeDataProviders)
+            {
+                if (persistenceDataProvider.DeleteAnchors(ids))
+                {
+                    return true;
+                }
+            }
 
-            return currentSpatialPersistenceProvider.MoveAnchoredObject(anchoredObject, worldPos, worldRot, cloudSpatialPersistenceID);
+            return false;
         }
 
-        public bool TryClearAnchors() => currentSpatialPersistenceProvider.TryClearAnchors();
-
         /// <inheritdoc />
-        public event Action CreateAnchoredObjectFailed;
+        public bool TryClearAnchorCache()
+        {
+            var anyClear = false;
 
-        /// <inheritdoc />
-        public event Action<string, GameObject> CreateAnchoredObjectSucceeded;
+            foreach (var persistenceDataProvider in activeDataProviders)
+            {
+                if (persistenceDataProvider.TryClearAnchorCache())
+                {
+                    anyClear = true;
+                }
+            }
 
-        /// <inheritdoc />
-        public event Action<string> SpatialPersistenceStatusMessage;
-
-        /// <inheritdoc />
-        public event Action<string, GameObject> CloudAnchorUpdated;
-
-        /// <inheritdoc />
-        public event Action<string> CloudAnchorLocated;
-
-        /// <inheritdoc />
-        public event Action<string> SpatialPersistenceError;
-        #endregion IMixedRealitySpatialPersistenceSystem Implementation
-
-        #region BaseSystem Implementation
+            return anyClear;
+        }
 
         private readonly HashSet<IMixedRealitySpatialPersistenceDataProvider> activeDataProviders = new HashSet<IMixedRealitySpatialPersistenceDataProvider>();
 
@@ -101,9 +110,6 @@ namespace XRTK.Services.SpatialPersistence
             }
 
             activeDataProviders.Add(provider);
-            SpatialPersistenceEvents(provider, true);
-            currentSpatialPersistenceProvider = provider;   
-
             return true;
         }
 
@@ -115,38 +121,8 @@ namespace XRTK.Services.SpatialPersistence
                 return false;
             }
 
-            SpatialPersistenceEvents(provider, false);
             activeDataProviders.Remove(provider);
-            currentSpatialPersistenceProvider = null;
-
             return true;
         }
-
-        private void SpatialPersistenceEvents(IMixedRealitySpatialPersistenceDataProvider provider, bool isRegistered)
-        {
-            if (activeDataProviders != null && activeDataProviders.Contains(provider))
-            {
-                if (isRegistered)
-                {
-                    provider.CreateAnchoredObjectSucceeded += CreateAnchoredObjectSucceeded;
-                    provider.CreateAnchoredObjectFailed += CreateAnchoredObjectFailed;
-                    provider.SpatialPersistenceStatusMessage += SpatialPersistenceStatusMessage;
-                    provider.CloudAnchorUpdated += CloudAnchorUpdated;
-                    provider.CloudAnchorLocated += CloudAnchorLocated;
-                    provider.SpatialPersistenceError += SpatialPersistenceError;
-                }
-                else
-                {
-                    provider.CreateAnchoredObjectSucceeded -= CreateAnchoredObjectSucceeded;
-                    provider.CreateAnchoredObjectFailed -= CreateAnchoredObjectFailed;
-                    provider.SpatialPersistenceStatusMessage -= SpatialPersistenceStatusMessage;
-                    provider.CloudAnchorUpdated -= CloudAnchorUpdated;
-                    provider.CloudAnchorLocated -= CloudAnchorLocated;
-                    provider.SpatialPersistenceError -= SpatialPersistenceError;
-                }
-            }
-        }
-
-        #endregion BaseSystem Implementation
     }
 }
