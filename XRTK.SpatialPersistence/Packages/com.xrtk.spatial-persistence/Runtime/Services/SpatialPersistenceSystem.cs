@@ -22,7 +22,7 @@ namespace XRTK.Services.SpatialPersistence
         }
 
         /// <inheritdoc />
-        public Guid CreateAnchoredObject(GameObject prefab, Vector3 position, Quaternion rotation, DateTimeOffset timeToLive)
+        public bool TryCreateAnchoredObject(GameObject prefab, Vector3 position, Quaternion rotation, DateTimeOffset timeToLive)
         {
             Debug.Assert(prefab, "Prefab Missing");
 
@@ -30,14 +30,19 @@ namespace XRTK.Services.SpatialPersistence
 
             foreach (var persistenceDataProvider in activeDataProviders)
             {
-                return persistenceDataProvider.CreateAnchoredObject(position, rotation, timeToLive);
+                var guid = persistenceDataProvider.CreateAnchoredObject(position, rotation, timeToLive);
+
+                if (guid != Guid.Empty)
+                {
+                    return true;
+                }
             }
 
-            return default;
+            return false;
         }
 
         /// <inheritdoc />
-        public bool FindAnchorPoints(params Guid[] ids)
+        public bool TryFindAnchorPoints(params Guid[] ids)
         {
             Debug.Assert(ids.Length > 0, "IDs required for SpatialPersistence search");
 
@@ -53,7 +58,7 @@ namespace XRTK.Services.SpatialPersistence
         }
 
         /// <inheritdoc />
-        public bool MoveSpatialPersistence(Guid id, Vector3 position, Quaternion rotation)
+        public bool TryMoveSpatialPersistence(Guid id, Vector3 position, Quaternion rotation)
         {
             foreach (var persistenceDataProvider in activeDataProviders)
             {
@@ -67,7 +72,7 @@ namespace XRTK.Services.SpatialPersistence
         }
 
         /// <inheritdoc />
-        public bool DeleteAnchors(params Guid[] ids)
+        public bool TryDeleteAnchors(params Guid[] ids)
         {
             foreach (var persistenceDataProvider in activeDataProviders)
             {
