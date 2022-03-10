@@ -1,0 +1,20 @@
+{
+    "name": "XRTK.SpatialPersistence.Editor",
+    "rootNamespace": "XRTK.SpatialPersistence.Editor",
+    "references": [
+        "GUID:f3241d040533491e8a1e2714b27c3111",
+        "GUID:e67d30660ec243e4836aac191d3f36fb",
+        "GUID:c148ca4f0506aba4bb7c9e15a44bf2e3"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
